@@ -28,6 +28,7 @@ export const api = {
     req("/api/transfer/gift-create", "POST", { metal, grams, message }),
   txns: () => req("/api/transactions"),
   fees: () => req("/api/admin/fees"),
+  notifications: () => req("/api/notifications"),
 };
 
 export function fmtInr(n: number) {
