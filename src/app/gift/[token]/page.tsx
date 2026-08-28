@@ -25,7 +25,7 @@ export default function GiftClaim({ params }: { params: { token: string } }) {
       {state === "loading" && <p className="muted">Checking…</p>}
       {state === "ok" && (
         <>
-          <p>You've received <b style={{ color: "var(--gold-light)" }}>{info.amount_grams}g {info.metal_type}</b>!</p>
+          <p>You've received <b style={{ color: "var(--gold)" }}>{info.amount_grams}g {info.metal_type}</b>!</p>
           <p className="muted" style={{ fontSize: 13 }}>Sign in to VaultPayz to claim it into your vault.</p>
           <a className="btn btn-primary" href="/">Claim & continue</a>
         </>

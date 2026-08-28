@@ -64,7 +64,7 @@ function Transfer() {
         <input className="input" value={message} onChange={(e) => setMessage(e.target.value)} style={{ margin: "8px 0 12px" }} />
 
         <div className="muted" style={{ fontSize: 13, marginBottom: 12 }}>
-          Fee (0.33%): {feeG.toFixed(6)}g · Receiver gets: <b style={{ color: "var(--gold-light)" }}>{netG.toFixed(6)}g</b>
+          Fee (0.33%): {feeG.toFixed(6)}g · Receiver gets: <b style={{ color: "var(--gold)" }}>{netG.toFixed(6)}g</b>
         </div>
 
         <button className="btn btn-primary" disabled={busy || !found?.found} onClick={go}>

@@ -26,7 +26,7 @@ function History() {
           </thead>
           <tbody>
             {data.transactions.map((t: any) => (
-              <tr key={t.id} style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}>
+              <tr key={t.id} style={{ borderTop: "1px solid var(--border)" }}>
                 <td style={td}>{t.tax_id}</td>
                 <td style={td}>{t.txn_type}</td>
                 <td style={td}>{t.metal_type}</td>

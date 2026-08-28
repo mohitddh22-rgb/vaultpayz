@@ -27,7 +27,7 @@ function Admin() {
           </thead>
           <tbody>
             {Object.entries(acc).map(([k, v]: any) => (
-              <tr key={k} style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}>
+              <tr key={k} style={{ borderTop: "1px solid var(--border)" }}>
                 <td style={td}>{k}</td>
                 <td style={td}>₹{v.total_inr.toLocaleString("en-IN")}</td>
                 <td style={td}>₹{v.today_inr.toLocaleString("en-IN")}</td>

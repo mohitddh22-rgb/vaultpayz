@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { Nav } from "@/components/Nav";
 import { SessionProvider } from "@/components/SessionProvider";
+import { Shell } from "@/components/Shell";
 
 export const metadata: Metadata = {
   title: "VaultPayz — Digital Bullion",
@@ -13,10 +13,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body>
         <SessionProvider>
-          <Nav />
-          <main style={{ maxWidth: 980, margin: "0 auto", padding: "24px 16px 80px" }}>
-            {children}
-          </main>
+          <Shell>{children}</Shell>
         </SessionProvider>
       </body>
     </html>
