@@ -464,3 +464,80 @@ function accrue(type: string, inr: number, grams: number) {
 export function seedDemo(userId: string, metal: "gold" | "silver", grams: number) {
   postLedger([{ user_id: userId, metal_type: metal, entry_type: "credit", amount_grams: grams, txn_ref: "seed", request_id: "seed", note: "seed" }]);
 }
+
+// ── DEMO DATA (mock mode only) ──────────────────────────────────────────
+// Populates realistic accounts + history on first load so the app looks alive
+// with zero external APIs. Called once from the module init below.
+function seedIfEmpty() {
+  if (db.profiles.size > 0) return;
+
+  const demo = [
+    { phone: "9999900001", name: "Aarav Sharma", kyc: "verified" as const, gold: 12.5, silver: 120, vault: "VP100001" },
+    { phone: "9999900002", name: "Priya Nair", kyc: "verified" as const, gold: 4.2, silver: 0, vault: "VP100002" },
+    { phone: "9999900003", name: "Rohan Mehta", kyc: "pending" as const, gold: 1.1, silver: 35, vault: "VP100003" },
+  ];
+  const ids: Record<string, string> = {};
+  demo.forEach((d, i) => {
+    const id = uid();
+    ids[d.phone] = id;
+    db.profiles.set(id, {
+      id,
+      vault_id: d.vault,
+      full_name: d.name,
+      phone: d.phone,
+      email: d.name.toLowerCase().replace(/\s/g, ".") + "@example.com",
+      kyc_status: d.kyc,
+      pan_masked: "ABCDE" + String(1000 + i) + "X",
+    });
+    // seed custody balances via ledger (materialized into wallets)
+    postLedger([{ user_id: id, metal_type: "gold", entry_type: "credit", amount_grams: d.gold, txn_ref: "seed", request_id: "seed", note: "seed" }]);
+    if (d.silver > 0)
+      postLedger([{ user_id: id, metal_type: "silver", entry_type: "credit", amount_grams: d.silver, txn_ref: "seed", request_id: "seed", note: "seed" }]);
+  });
+
+  // demo transactions for Aarav
+  const aarav = ids["9999900001"];
+  const txns: any[] = [
+    { metal: "gold", type: "buy", grams: 5, inr: 38700 },
+    { metal: "silver", type: "buy", grams: 100, inr: 9240 },
+    { metal: "gold", type: "sell", grams: 1.5, inr: 11460 },
+  ];
+  txns.forEach((t) => {
+    const price = db.prices[t.metal as "gold" | "silver"];
+    const inr = t.inr ?? Math.round(t.grams * price.buy_price_per_gram);
+    const taxId = "VPT-" + new Date().toISOString().slice(0, 10).replace(/-/g, "") + "-" + String(db.transactions.length + 1).padStart(6, "0");
+    db.transactions.push({
+      id: uid(), tax_id: taxId, user_id: aarav, txn_type: t.type as any, metal_type: t.metal,
+      amount_grams: t.grams, amount_inr: inr, price_per_gram: price.buy_price_per_gram,
+      fee_inr: Math.round(inr * SPREAD), status: "completed", counterparty_id: null, created_at: now(),
+    });
+    accrue("spread", Math.round(inr * SPREAD), 0);
+  });
+
+  // demo P2P: Aarav -> Priya 2g gold
+  const priya = ids["9999900002"];
+  db.transfers.push({
+    id: uid(),
+    transfer_id: "VPP-" + new Date().toISOString().slice(0, 10).replace(/-/g, "") + "-000001",
+    sender_id: aarav, receiver_id: priya, metal_type: "gold", amount_grams: 2, amount_inr: 15420,
+    fee_grams: round6(2 * P2P_FEE), fee_inr: Math.round(15420 * P2P_FEE), message: "Rent share", status: "completed", created_at: now(),
+  });
+  postLedger([
+    { user_id: aarav, metal_type: "gold", entry_type: "debit", amount_grams: round6(2 + 2 * P2P_FEE), txn_ref: "seed", request_id: "seed", note: "p2p_send" },
+    { user_id: priya, metal_type: "gold", entry_type: "credit", amount_grams: 2, txn_ref: "seed", request_id: "seed", note: "p2p_receive" },
+  ]);
+  accrue("p2p_fee", Math.round(15420 * P2P_FEE), round6(2 * P2P_FEE));
+
+  // demo gift link (unclaimed)
+  db.gifts.push({
+    id: uid(), token: "demogift" + rid().slice(0, 8), sender_id: aarav, metal_type: "gold", amount_grams: 0.5,
+    message: "Congratulations!", status: "created", claimed_by: null, expires_at: new Date(Date.now() + 7 * 864e5).toISOString(),
+    claim_url: "/gift/demogift",
+  });
+
+  // demo notifications
+  notify(aarav, "Welcome to VaultPayz", "Your vault is ready. KYC verified — full limits unlocked.");
+  notify(aarav, "Gold received", "Priya Nair sent you 2g gold.");
+  notify(priya, "Gold received", "Aarav Sharma sent you 2g gold.");
+}
+if ((process.env.SEED_DEMO_DATA ?? "true") !== "false") seedIfEmpty();

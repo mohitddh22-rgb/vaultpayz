@@ -47,13 +47,19 @@ export function LoginGate({ children }: { children: React.ReactNode }) {
     <div className="card" style={{ maxWidth: 420, margin: "40px auto" }}>
       <h2 style={{ marginTop: 0 }}>Sign in to VaultPayz</h2>
       <p className="muted" style={{ fontSize: 14 }}>
-        Demo mode: enter any phone + name to get an OTP-less session. Mock SafeGold/Razorpay.
+        Demo mode: all external APIs (SafeGold, Razorpay) are mocked. Sign in with a seeded account or any phone.
       </p>
+      <div style={{ display: "flex", flexDirection: "column", gap: 8, margin: "10px 0 12px" }}>
+        <button className="btn btn-ghost" onClick={() => login("9999900001", "Aarav Sharma")}>Demo: Aarav Sharma (VP100001 · KYC verified)</button>
+        <button className="btn btn-ghost" onClick={() => login("9999900002", "Priya Nair")}>Demo: Priya Nair (VP100002 · KYC verified)</button>
+        <button className="btn btn-ghost" onClick={() => login("9999900003", "Rohan Mehta")}>Demo: Rohan Mehta (VP100003 · KYC pending)</button>
+      </div>
+      <div className="muted" style={{ fontSize: 12, marginBottom: 6 }}>Or use a custom phone:</div>
       <input className="input" placeholder="Phone (10 digits)" value={phone} onChange={(e) => setPhone(e.target.value)} style={{ marginBottom: 10 }} />
       <input className="input" placeholder="Full name" value={name} onChange={(e) => setName(e.target.value)} style={{ marginBottom: 12 }} />
       <button
         className="btn btn-primary"
-        disabled={busy || phone.length < 10}
+        disabled={busy || (phone.length < 10)}
         onClick={async () => {
           setBusy(true);
           try {
